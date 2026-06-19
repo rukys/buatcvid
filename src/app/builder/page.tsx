@@ -17,7 +17,7 @@ import Step5Skills from '@/components/builder/steps/Step5Skills';
 import Step6Summary from '@/components/builder/steps/Step6Summary';
 import Step7Preview from '@/components/builder/steps/Step7Preview';
 
-import { generatePDF } from '@/actions/generatePDF';
+import { generatePDFClient } from '@/lib/generatePDFClient';
 import toast from 'react-hot-toast';
 
 function BuilderPageContent() {
@@ -69,26 +69,12 @@ function BuilderPageContent() {
       setIsGenerating(true);
       toast.loading('Menyiapkan file PDF...', { id: 'download-pdf-nav' });
 
-      const { pdfBase64, error } = await generatePDF({
+      const blob = await generatePDFClient({
         resumeData,
         templateId: selectedTemplate,
         accentColor,
       });
 
-      if (error || !pdfBase64) {
-        toast.error(error || 'Gagal mengunduh PDF', { id: 'download-pdf-nav' });
-        return;
-      }
-
-      // Convert Base64 to Blob
-      const binaryString = window.atob(pdfBase64);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      
-      const blob = new Blob([bytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       
       // Trigger download

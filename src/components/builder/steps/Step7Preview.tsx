@@ -6,7 +6,7 @@ import { useUIStore } from '@/store/useUIStore';
 import { ACCENT_COLORS, TemplateId, OutputLanguage } from '@/types/resume';
 import { FileCheck, Check, Globe, Eye, Download } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { generatePDF } from '@/actions/generatePDF';
+import { generatePDFClient } from '@/lib/generatePDFClient';
 import toast from 'react-hot-toast';
 
 export default function Step7Preview() {
@@ -32,26 +32,12 @@ export default function Step7Preview() {
       setIsGenerating(true);
       toast.loading('Menyiapkan file PDF...', { id: 'download-pdf' });
 
-      const { pdfBase64, error } = await generatePDF({
+      const blob = await generatePDFClient({
         resumeData: resume,
         templateId: selectedTemplate,
         accentColor,
       });
 
-      if (error || !pdfBase64) {
-        toast.error(error || 'Gagal mengunduh PDF', { id: 'download-pdf' });
-        return;
-      }
-
-      // Convert Base64 to Blob
-      const binaryString = window.atob(pdfBase64);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      
-      const blob = new Blob([bytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       
       // Trigger download
