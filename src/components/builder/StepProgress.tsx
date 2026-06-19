@@ -1,8 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useUIStore } from '@/store/useUIStore';
+import { useResumeStore } from '@/store/useResumeStore';
 import { cn } from '@/lib/utils';
+import { Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function StepProgress() {
   const currentStep = useUIStore((state) => state.currentStep);
@@ -19,8 +23,22 @@ export default function StepProgress() {
     'Preview & Unduh',
   ];
 
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
   // Calculate percentage fill
   const fillPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+
+  const resetResume = useResumeStore((state) => state.resetResume);
+  const setTemplate = useUIStore((state) => state.setTemplate);
+  const setAccentColor = useUIStore((state) => state.setAccentColor);
+
+  const handleReset = () => {
+    resetResume();
+    setTemplate('clean');
+    setAccentColor('#2563EB');
+    goToStep(1);
+    toast.success('Data resume berhasil direset!', { id: 'reset-resume-toast' });
+  };
 
   return (
     <div className="w-full bg-white border-b border-gray-200 px-4 pt-4 pb-5 md:pt-5 md:pb-8 sticky top-0 z-30 select-none">
@@ -28,9 +46,20 @@ export default function StepProgress() {
         
         {/* Step Label Heading */}
         <div className="flex justify-between items-center text-xs sm:text-sm">
-          <span className="font-semibold text-primary-600 uppercase tracking-wide">
-            Langkah {currentStep} dari {totalSteps}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="font-semibold text-primary-600 uppercase tracking-wide">
+              Langkah {currentStep} dari {totalSteps}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsConfirmOpen(true)}
+              className="text-[10px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded px-2 py-1 transition-all flex items-center gap-1.5 cursor-pointer"
+              title="Mulai dari awal"
+            >
+              <Trash2 className="w-3 h-3" />
+              <span>Reset Data</span>
+            </button>
+          </div>
           <span className="font-bold text-gray-950 font-heading">
             {stepLabels[currentStep - 1]}
           </span>
@@ -86,6 +115,17 @@ export default function StepProgress() {
         </div>
 
       </div>
+
+      {/* Premium Confirm Modal */}
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleReset}
+        title="Mulai Resume dari Awal?"
+        message="Apakah Anda yakin ingin menghapus semua data resume yang telah Anda isi? Tindakan ini tidak dapat dibatalkan."
+        confirmLabel="Ya, Hapus Data"
+        cancelLabel="Batal"
+      />
     </div>
   );
 }

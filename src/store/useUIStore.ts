@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { UIState, TemplateId, AccentColor } from '@/types/resume';
 
 interface UIStore extends UIState {
@@ -19,37 +20,49 @@ const initialUIState: UIState = {
   generatingField: undefined,
 };
 
-export const useUIStore = create<UIStore>((set) => ({
-  ...initialUIState,
+export const useUIStore = create<UIStore>()(
+  persist(
+    (set) => ({
+      ...initialUIState,
 
-  nextStep: () =>
-    set((state) => ({
-      currentStep: Math.min(state.currentStep + 1, state.totalSteps),
-    })),
+      nextStep: () =>
+        set((state) => ({
+          currentStep: Math.min(state.currentStep + 1, state.totalSteps),
+        })),
 
-  prevStep: () =>
-    set((state) => ({
-      currentStep: Math.max(state.currentStep - 1, 1),
-    })),
+      prevStep: () =>
+        set((state) => ({
+          currentStep: Math.max(state.currentStep - 1, 1),
+        })),
 
-  goToStep: (step) =>
-    set(() => ({
-      currentStep: step,
-    })),
+      goToStep: (step) =>
+        set(() => ({
+          currentStep: step,
+        })),
 
-  setTemplate: (template) =>
-    set(() => ({
-      selectedTemplate: template,
-    })),
+      setTemplate: (template) =>
+        set(() => ({
+          selectedTemplate: template,
+        })),
 
-  setAccentColor: (color) =>
-    set(() => ({
-      accentColor: color,
-    })),
+      setAccentColor: (color) =>
+        set(() => ({
+          accentColor: color,
+        })),
 
-  setIsGenerating: (value, field) =>
-    set(() => ({
-      isGenerating: value,
-      generatingField: field,
-    })),
-}));
+      setIsGenerating: (value, field) =>
+        set(() => ({
+          isGenerating: value,
+          generatingField: field,
+        })),
+    }),
+    {
+      name: 'buatcv-ui-store',
+      partialize: (state) => ({
+        currentStep: state.currentStep,
+        selectedTemplate: state.selectedTemplate,
+        accentColor: state.accentColor,
+      }),
+    }
+  )
+);
